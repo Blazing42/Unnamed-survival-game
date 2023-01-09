@@ -69,7 +69,9 @@ MonoBehaviour:
   walkSpeed: 1.6
   sprintSpeed: 4
   rotationFactor: 5
-  gravity: 9
+  maxJumpHeight: 0.6
+  maxJumpTime: 0.5
+  fallMultiplier: 1.5
 --- !u!114 &1249700034
 MonoBehaviour:
   m_ObjectHideFlags: 0

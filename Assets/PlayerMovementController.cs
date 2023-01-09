@@ -16,20 +16,28 @@ public class PlayerMovementController : NetworkBehaviour
     Vector3 currentMove;
     bool isMovingPressed;
     bool isSprintingPressed;
+    bool isJumpPressed = false;
 
     //editable variables in the editor for playtesting
     [SerializeField] float walkSpeed;
     [SerializeField] float sprintSpeed;
     [SerializeField] float rotationFactor;
-    [SerializeField] float gravity;
+    [SerializeField] float maxJumpHeight;
+    [SerializeField] float maxJumpTime;
+    [SerializeField] float fallMultiplier;
 
     //variables to handle animation
     int isWalkingHash;
     int isSprintingHash;
 
+    //variables to handle jumping
+    float initialJumpVelocity;
+    bool isJumping= false;
+    float gravity;
+
     private void Awake()
     {
-        //assign variables
+        //assign classes to the variables
         playerInput = new PlayerInput();
         charController = GetComponent<CharacterController>();
 
@@ -44,8 +52,14 @@ public class PlayerMovementController : NetworkBehaviour
         playerInput.CharacterControls.Move.performed += OnMoveInput;
         playerInput.CharacterControls.Run.started += OnRun;
         playerInput.CharacterControls.Run.canceled += OnRun;
+        playerInput.CharacterControls.Jump.started += OnJump;
+        playerInput.CharacterControls.Jump.canceled += OnJump;
 
+        //setup jump 
+        SetupJump();
     }
+
+    //callback functions fo input system
     void OnMoveInput(InputAction.CallbackContext context)
     {
         currentMoveInput = context.ReadValue<Vector2>();
@@ -57,6 +71,18 @@ public class PlayerMovementController : NetworkBehaviour
     void OnRun(InputAction.CallbackContext context)
     {
         isSprintingPressed = context.ReadValueAsButton();
+    }
+
+    void OnJump(InputAction.CallbackContext context)
+    {
+        isJumpPressed = context.ReadValueAsButton();
+    }
+
+    void SetupJump()
+    {
+        float timeToApex = maxJumpTime / 2;
+        gravity = (-2 * maxJumpTime) / Mathf.Pow(timeToApex, 2);
+        initialJumpVelocity = (2 * maxJumpHeight) / timeToApex;
     }
 
     void HandleAnimation()
@@ -108,14 +134,36 @@ public class PlayerMovementController : NetworkBehaviour
 
     void HandleGravity()
     {
+        bool isFalling = currentMove.y <= 0.0f;
         if (charController.isGrounded)
         {
             float groundedGravity = -0.05f;
             currentMove.y = groundedGravity;
+            animator.SetBool("isJumping", false);
+        }
+        else if (isFalling)
+        {
+            currentMove.y += Mathf.Min(gravity * fallMultiplier * Time.deltaTime, -20.0f);
         }
         else
         {
-            currentMove.y -= gravity;
+            currentMove.y += gravity * Time.deltaTime;
+        }
+    }
+
+    void HandleJump()
+    {
+       
+        if(!isJumping && charController.isGrounded && isJumpPressed)
+        {
+            isJumping = true;
+            currentMove.y = initialJumpVelocity;
+            animator.SetBool("isJumping", true);
+        }
+        else if(!isJumpPressed && charController.isGrounded && isJumping)
+        {
+            isJumping = false;            
+            
         }
     }
 
@@ -132,11 +180,11 @@ public class PlayerMovementController : NetworkBehaviour
         {
             charController.Move(currentMove * walkSpeed * Time.deltaTime);
         }
+
         HandleRotation();
         HandleGravity();
         HandleAnimation();
-        
-
+        HandleJump();
     }
 
     private void OnEnable()
