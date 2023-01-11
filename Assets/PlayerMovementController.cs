@@ -7,16 +7,17 @@ using UnityEngine.InputSystem;
 public class PlayerMovementController : NetworkBehaviour
 {
     //reference variables
-    PlayerInput playerInput;
-    CharacterController charController;
-    Animator animator;
+    PlayerInput _playerInput;
+    CharacterController _charController;
+    Animator _animator;
 
     //variables to store player input values
-    Vector2 currentMoveInput;
-    Vector3 currentMove;
-    bool isMovingPressed;
-    bool isSprintingPressed;
-    bool isJumpPressed = false;
+    Vector2 _currentMoveInput;
+    Vector3 _currentMove;
+    Vector3 _currentRunMove;
+    bool _isMovingPressed;
+    bool _isSprintingPressed;
+    bool _isJumpPressed = false;
 
     //editable variables in the editor for playtesting
     [SerializeField] float walkSpeed;
@@ -27,33 +28,35 @@ public class PlayerMovementController : NetworkBehaviour
     [SerializeField] float fallMultiplier;
 
     //variables to handle animation
-    int isWalkingHash;
-    int isSprintingHash;
+    int _isWalkingHash;
+    int _isSprintingHash;
+    int _isJumpingHash;
 
     //variables to handle jumping
-    float initialJumpVelocity;
-    bool isJumping= false;
-    float gravity;
+    float _initialJumpVelocity;
+    bool _isJumping= false;
+    float _gravity;
 
     private void Awake()
     {
         //assign classes to the variables
-        playerInput = new PlayerInput();
-        charController = GetComponent<CharacterController>();
+        _playerInput = new PlayerInput();
+        _charController = GetComponent<CharacterController>();
 
         //setup animation
-        animator = GetComponentInChildren<Animator>();
-        isWalkingHash = Animator.StringToHash("isWalking");
-        isSprintingHash = Animator.StringToHash("isSprinting");
+        _animator = GetComponentInChildren<Animator>();
+        _isWalkingHash = Animator.StringToHash("isWalking");
+        _isSprintingHash = Animator.StringToHash("isSprinting");
+        _isJumpingHash = Animator.StringToHash("isJumping");
 
         //setup player input
-        playerInput.CharacterControls.Move.started += OnMoveInput;
-        playerInput.CharacterControls.Move.canceled += OnMoveInput;
-        playerInput.CharacterControls.Move.performed += OnMoveInput;
-        playerInput.CharacterControls.Run.started += OnRun;
-        playerInput.CharacterControls.Run.canceled += OnRun;
-        playerInput.CharacterControls.Jump.started += OnJump;
-        playerInput.CharacterControls.Jump.canceled += OnJump;
+        _playerInput.CharacterControls.Move.started += OnMoveInput;
+        _playerInput.CharacterControls.Move.canceled += OnMoveInput;
+        _playerInput.CharacterControls.Move.performed += OnMoveInput;
+        _playerInput.CharacterControls.Run.started += OnRun;
+        _playerInput.CharacterControls.Run.canceled += OnRun;
+        _playerInput.CharacterControls.Jump.started += OnJump;
+        _playerInput.CharacterControls.Jump.canceled += OnJump;
 
         //setup jump 
         SetupJump();
@@ -62,55 +65,57 @@ public class PlayerMovementController : NetworkBehaviour
     //callback functions fo input system
     void OnMoveInput(InputAction.CallbackContext context)
     {
-        currentMoveInput = context.ReadValue<Vector2>();
-        currentMove.x = currentMoveInput.x;
-        currentMove.z = currentMoveInput.y;
-        isMovingPressed = currentMoveInput.x != 0 || currentMoveInput.y != 0;
+        _currentMoveInput = context.ReadValue<Vector2>();
+        _currentMove.x = _currentMoveInput.x * walkSpeed;
+        _currentMove.z = _currentMoveInput.y * walkSpeed;
+        _currentRunMove.x = _currentMoveInput.x * sprintSpeed;
+        _currentRunMove.z = _currentMoveInput.y * sprintSpeed;
+        _isMovingPressed = _currentMoveInput.x != 0 || _currentMoveInput.y != 0;
     }
 
     void OnRun(InputAction.CallbackContext context)
     {
-        isSprintingPressed = context.ReadValueAsButton();
+        _isSprintingPressed = context.ReadValueAsButton();
     }
 
     void OnJump(InputAction.CallbackContext context)
     {
-        isJumpPressed = context.ReadValueAsButton();
+        _isJumpPressed = context.ReadValueAsButton();
     }
 
     void SetupJump()
     {
         float timeToApex = maxJumpTime / 2;
-        gravity = (-2 * maxJumpTime) / Mathf.Pow(timeToApex, 2);
-        initialJumpVelocity = (2 * maxJumpHeight) / timeToApex;
+        _gravity = (-2 * maxJumpTime) / Mathf.Pow(timeToApex, 2);
+        _initialJumpVelocity = (2 * maxJumpHeight) / timeToApex;
     }
 
     void HandleAnimation()
     {
-        bool isWalking = animator.GetBool(isWalkingHash);
-        bool isSprinting = animator.GetBool(isSprintingHash);
+        bool isWalking = _animator.GetBool(_isWalkingHash);
+        bool isSprinting = _animator.GetBool(_isSprintingHash);
         //check is the character is moving and set animation
-        if (isMovingPressed && !isWalking)
+        if (_isMovingPressed && !isWalking)
         {
-            animator.SetBool(isWalkingHash, true);
+            _animator.SetBool(_isWalkingHash, true);
         }
-        else if(!isMovingPressed && isWalking)
+        else if(!_isMovingPressed && isWalking)
         {
-            animator.SetBool(isWalkingHash, false);
+            _animator.SetBool(_isWalkingHash, false);
         }
 
         //check if the player is running and set animation
-        if((isMovingPressed && isSprintingPressed) && !isSprinting)
+        if((_isMovingPressed && _isSprintingPressed) && !isSprinting)
         {
-            animator.SetBool(isSprintingHash, true);
+            _animator.SetBool(_isSprintingHash, true);
         }
-        else if((!isMovingPressed && !isSprintingPressed) && isSprinting)
+        else if((!_isMovingPressed && !_isSprintingPressed) && isSprinting)
         {
-            animator.SetBool(isSprintingHash, false);
+            _animator.SetBool(_isSprintingHash, false);
         }
-        else if ((isMovingPressed && !isSprintingPressed) && isSprinting)
+        else if ((_isMovingPressed && !_isSprintingPressed) && isSprinting)
         {
-            animator.SetBool(isSprintingHash, false);
+            _animator.SetBool(_isSprintingHash, false);
         }
 
     }
@@ -118,13 +123,13 @@ public class PlayerMovementController : NetworkBehaviour
     void HandleRotation()
     {
         Vector3 positionToLookAt;
-        positionToLookAt.x = currentMove.x;
-        positionToLookAt.z = currentMove.z;
+        positionToLookAt.x = _currentMove.x;
+        positionToLookAt.z = _currentMove.z;
         positionToLookAt.y = 0.0f;
 
         Quaternion currentRotation = transform.rotation;
 
-        if (isMovingPressed)
+        if (_isMovingPressed)
         {
             Quaternion targetRotation = Quaternion.LookRotation(positionToLookAt);
             transform.rotation = Quaternion.Slerp(currentRotation, targetRotation, rotationFactor * Time.deltaTime);
@@ -134,35 +139,39 @@ public class PlayerMovementController : NetworkBehaviour
 
     void HandleGravity()
     {
-        bool isFalling = currentMove.y <= 0.0f;
-        if (charController.isGrounded)
+        bool isFalling = _currentMove.y <= 0.0f;
+        if (_charController.isGrounded)
         {
             float groundedGravity = -0.05f;
-            currentMove.y = groundedGravity;
-            animator.SetBool("isJumping", false);
+            _currentMove.y = groundedGravity;
+            _currentRunMove.y = groundedGravity;
+            _animator.SetBool(_isJumpingHash, false);
         }
         else if (isFalling)
         {
-            currentMove.y += Mathf.Min(gravity * fallMultiplier * Time.deltaTime, -20.0f);
+            _currentMove.y += Mathf.Min(_gravity * fallMultiplier * Time.deltaTime, -20.0f);
+            _currentRunMove.y += Mathf.Min(_gravity * fallMultiplier * Time.deltaTime, -20.0f);
         }
         else
         {
-            currentMove.y += gravity * Time.deltaTime;
+            _currentMove.y += _gravity * Time.deltaTime;
+            _currentRunMove.y += _gravity * Time.deltaTime;
         }
     }
 
     void HandleJump()
     {
        
-        if(!isJumping && charController.isGrounded && isJumpPressed)
+        if(!_isJumping && _charController.isGrounded && _isJumpPressed)
         {
-            isJumping = true;
-            currentMove.y = initialJumpVelocity;
-            animator.SetBool("isJumping", true);
+            _isJumping = true;
+            _currentMove.y = _initialJumpVelocity;
+            _currentRunMove.y = _initialJumpVelocity;
+            _animator.SetBool(_isJumpingHash, true);
         }
-        else if(!isJumpPressed && charController.isGrounded && isJumping)
+        else if(!_isJumpPressed && _charController.isGrounded && _isJumping)
         {
-            isJumping = false;            
+            _isJumping = false;            
             
         }
     }
@@ -172,13 +181,13 @@ public class PlayerMovementController : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        if (isSprintingPressed)
+        if (_isSprintingPressed)
         {
-            charController.Move(currentMove * sprintSpeed * Time.deltaTime);
+            _charController.Move(_currentRunMove * Time.deltaTime);
         }
         else
         {
-            charController.Move(currentMove * walkSpeed * Time.deltaTime);
+            _charController.Move(_currentMove * Time.deltaTime);
         }
 
         HandleRotation();
@@ -189,11 +198,11 @@ public class PlayerMovementController : NetworkBehaviour
 
     private void OnEnable()
     {
-        playerInput.CharacterControls.Enable();
+        _playerInput.CharacterControls.Enable();
     }
 
     private void OnDisable()
     {
-        playerInput.CharacterControls.Disable();
+        _playerInput.CharacterControls.Disable();
     }
 }
