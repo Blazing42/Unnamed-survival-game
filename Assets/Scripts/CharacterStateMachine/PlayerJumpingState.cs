@@ -38,7 +38,11 @@ public class PlayerJumpingState : PlayerBaseState
 
     public override void CheckSwitchState()
     {
-        if (Ctx.CharController.isGrounded)
+        if (Ctx.CharController.isGrounded && Ctx.IsCrouchPressed)
+        {
+            SwitchStates(Factory.Crouched());
+        }
+        else if (Ctx.CharController.isGrounded)
         {
             SwitchStates(Factory.Grounded());
         }

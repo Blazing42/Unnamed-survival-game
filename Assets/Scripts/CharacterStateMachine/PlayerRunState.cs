@@ -35,7 +35,12 @@ public class PlayerRunState : PlayerBaseState
         {
             SwitchStates(Factory.Walk());
         }
+        else if (Ctx.IsCrouchPressed)
+        {
+            SwitchStates(Factory.Walk());
+        }
     }
+    
 
     public override void InitialiseSubstate(){}
 }

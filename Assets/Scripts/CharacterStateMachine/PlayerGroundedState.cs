@@ -33,6 +33,10 @@ public class PlayerGroundedState : PlayerBaseState
         {
             SwitchStates(Factory.Jumping());
         }
+        else if (Ctx.IsCrouchPressed)
+        {
+            SwitchStates(Factory.Crouched());
+        }
     }
 
     public override void InitialiseSubstate()

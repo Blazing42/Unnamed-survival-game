@@ -27,7 +27,7 @@ public class PlayerIdleState : PlayerBaseState
 
     public override void CheckSwitchState()
     {
-        if(Ctx.IsMovingPressed && Ctx.IsSprintingPressed)
+        if(Ctx.IsMovingPressed && Ctx.IsSprintingPressed && !Ctx.IsCrouchPressed)
         {
             SwitchStates(Factory.Run());
         }

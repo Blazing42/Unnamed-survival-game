@@ -35,12 +35,15 @@ public class PlayerStateMachine : NetworkBehaviour
     public bool IsSprintingPressed { get { return _isSprintingPressed; } }
     bool _isJumpPressed = false;
     public bool IsJumpPressed { get { return _isJumpPressed; }}
+    bool _isCrouchPressed = false;
+    public bool IsCrouchPressed { get { return _isCrouchPressed; } }
     bool _requiresNewJumpPress = false;
     public bool RequiresNewJumpPress { get { return _requiresNewJumpPress; } set { _requiresNewJumpPress = value; } }
 
     //editable variables in the editor for playtesting
     [SerializeField] float walkSpeed;
     [SerializeField] float sprintSpeed;
+    [SerializeField] float crouchWalkSpeed;
     [SerializeField] float rotationFactor;
     [SerializeField] float maxJumpHeight;
     [SerializeField] float maxJumpTime;
@@ -82,6 +85,7 @@ public class PlayerStateMachine : NetworkBehaviour
         _isWalkingHash = Animator.StringToHash("isWalking");
         _isSprintingHash = Animator.StringToHash("isSprinting");
         _isJumpingHash = Animator.StringToHash("isJumping");
+        _isCrouchingHash = Animator.StringToHash("isCrouched");
 
         //setup player input
         _playerInput.CharacterControls.Move.started += OnMoveInput;
@@ -91,6 +95,8 @@ public class PlayerStateMachine : NetworkBehaviour
         _playerInput.CharacterControls.Run.canceled += OnRun;
         _playerInput.CharacterControls.Jump.started += OnJump;
         _playerInput.CharacterControls.Jump.canceled += OnJump;
+        _playerInput.CharacterControls.Crouch.started += OnCrouch;
+        _playerInput.CharacterControls.Crouch.canceled += OnCrouch;
 
         //setup jump 
         SetupJump();
@@ -152,6 +158,11 @@ public class PlayerStateMachine : NetworkBehaviour
     {
         _isJumpPressed = context.ReadValueAsButton();
         _requiresNewJumpPress = false;
+    }
+
+    void OnCrouch(InputAction.CallbackContext context)
+    {
+        _isCrouchPressed = context.ReadValueAsButton();
     }
 
     private void OnEnable()
