@@ -17,13 +17,26 @@ public class PlayerStateMachine : NetworkBehaviour
     //variables to store player input values
     Vector2 _currentMoveInput;
     Vector3 _currentMove;
+    public float CurrentMoveX { get { return _currentMove.x; } set { _currentMove.x = value; } }
+    public float CurrentMoveZ { get { return _currentMove.z; } set { _currentMove.z = value; } }
+
     Vector3 _currentRunMove;
+    public float CurrentRunMoveX { get { return _currentRunMove.x; } set { _currentRunMove.x = value; } }
+    public float CurrentRunMoveZ { get { return _currentRunMove.z; } set { _currentRunMove.z = value; } }
+
     Vector3 _appliedMovement;
     public float AppliedMovementY { get { return _appliedMovement.y; } set { _appliedMovement.y = value; } }
+    public float AppliedMovementX { get { return _appliedMovement.x; } set { _appliedMovement.x = value; } }
+    public float AppliedMovementZ { get { return _appliedMovement.z; } set { _appliedMovement.z = value; } }
+
     bool _isMovingPressed;
+    public bool IsMovingPressed { get { return _isMovingPressed;  } }
     bool _isSprintingPressed;
+    public bool IsSprintingPressed { get { return _isSprintingPressed; } }
     bool _isJumpPressed = false;
     public bool IsJumpPressed { get { return _isJumpPressed; }}
+    bool _requiresNewJumpPress = false;
+    public bool RequiresNewJumpPress { get { return _requiresNewJumpPress; } set { _requiresNewJumpPress = value; } }
 
     //editable variables in the editor for playtesting
     [SerializeField] float walkSpeed;
@@ -100,7 +113,7 @@ public class PlayerStateMachine : NetworkBehaviour
     {
          HandleRotation();
         _charController.Move(_appliedMovement * Time.deltaTime);
-        _currentState.UpdateState();
+        _currentState.UpdateStates();
     }
 
     void HandleRotation()
@@ -138,6 +151,7 @@ public class PlayerStateMachine : NetworkBehaviour
     void OnJump(InputAction.CallbackContext context)
     {
         _isJumpPressed = context.ReadValueAsButton();
+        _requiresNewJumpPress = false;
     }
 
     private void OnEnable()

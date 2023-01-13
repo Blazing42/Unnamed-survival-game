@@ -5,7 +5,11 @@ using UnityEngine;
 public class PlayerGroundedState : PlayerBaseState
 {
     //constructor
-    public PlayerGroundedState(PlayerStateMachine context, PlayerStateFactory factory) : base(context, factory) { }
+    public PlayerGroundedState(PlayerStateMachine context, PlayerStateFactory factory) : base(context, factory) 
+    {
+        IsRootState = true;
+        InitialiseSubstate();
+    }
 
     public override void EnterState()
     {
@@ -25,7 +29,7 @@ public class PlayerGroundedState : PlayerBaseState
     public override void CheckSwitchState()
     {
         //if jump is pressed change to the jump state
-        if (Ctx.IsJumpPressed)
+        if (Ctx.IsJumpPressed && !Ctx.RequiresNewJumpPress)
         {
             SwitchStates(Factory.Jumping());
         }
@@ -33,6 +37,17 @@ public class PlayerGroundedState : PlayerBaseState
 
     public override void InitialiseSubstate()
     {
-        throw new System.NotImplementedException();
+        if(!Ctx.IsMovingPressed && !Ctx.IsSprintingPressed)
+        {
+            SetSubstate(Factory.Idle());
+        }
+        else if(Ctx.IsMovingPressed && !Ctx.IsSprintingPressed)
+        {
+            SetSubstate(Factory.Walk());
+        }
+        else
+        {
+            SetSubstate(Factory.Run());
+        }
     }
 }

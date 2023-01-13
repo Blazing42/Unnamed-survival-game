@@ -9,6 +9,10 @@ public class PlayerIdleState : PlayerBaseState
     public override void EnterState()
     {
         Debug.Log("entering idle state");
+        Ctx.Animator.SetBool(Ctx.IsSprintingHash, false);
+        Ctx.Animator.SetBool(Ctx.IsWalkingHash, false);
+        Ctx.AppliedMovementX = 0f;
+        Ctx.AppliedMovementZ = 0f;
     }
 
     public override void UpdateState()
@@ -18,16 +22,20 @@ public class PlayerIdleState : PlayerBaseState
 
     public override void ExitState()
     {
-        throw new System.NotImplementedException();
+        Debug.Log("exiting idle state");
     }
 
     public override void CheckSwitchState()
     {
-        throw new System.NotImplementedException();
+        if(Ctx.IsMovingPressed && Ctx.IsSprintingPressed)
+        {
+            SwitchStates(Factory.Run());
+        }
+        else if (Ctx.IsMovingPressed)
+        {
+            SwitchStates(Factory.Walk());
+        }
     }
 
-    public override void InitialiseSubstate()
-    {
-        throw new System.NotImplementedException();
-    }
+    public override void InitialiseSubstate(){}
 }

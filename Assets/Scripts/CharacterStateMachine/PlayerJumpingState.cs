@@ -5,7 +5,12 @@ using UnityEngine;
 public class PlayerJumpingState : PlayerBaseState
 {
     //constructor
-    public PlayerJumpingState(PlayerStateMachine context, PlayerStateFactory factory) : base(context, factory) { }
+    public PlayerJumpingState(PlayerStateMachine context, PlayerStateFactory factory) : base(context, factory) 
+    {
+        IsRootState = true;
+        InitialiseSubstate();
+    }
+
     public override void EnterState()
     {
         Debug.Log("entering jump state");
@@ -22,6 +27,11 @@ public class PlayerJumpingState : PlayerBaseState
     {
         float groundedGravity = -0.05f;
         Ctx.AppliedMovementY = groundedGravity;
+        if (Ctx.IsJumpPressed)
+        {
+            Ctx.RequiresNewJumpPress = true;
+        }
+        
         Ctx.Animator.SetBool(Ctx.IsJumpingHash, false);
         Debug.Log("exiting jump state");
     }
@@ -36,7 +46,18 @@ public class PlayerJumpingState : PlayerBaseState
 
     public override void InitialiseSubstate()
     {
-        throw new System.NotImplementedException();
+        if (!Ctx.IsMovingPressed && !Ctx.IsSprintingPressed)
+        {
+            SetSubstate(Factory.Idle());
+        }
+        else if (Ctx.IsMovingPressed && !Ctx.IsSprintingPressed)
+        {
+            SetSubstate(Factory.Walk());
+        }
+        else
+        {
+            SetSubstate(Factory.Run());
+        }
     }
 
     void HandleJump()

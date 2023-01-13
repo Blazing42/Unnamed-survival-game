@@ -9,25 +9,33 @@ public class PlayerWalkState : PlayerBaseState
     public override void EnterState()
     {
         Debug.Log("entering walk state");
+        Ctx.Animator.SetBool(Ctx.IsSprintingHash, false);
+        Ctx.Animator.SetBool(Ctx.IsWalkingHash, true);
     }
 
     public override void UpdateState()
     {
         CheckSwitchState();
+        Ctx.AppliedMovementX = Ctx.CurrentMoveX;
+        Ctx.AppliedMovementZ = Ctx.CurrentMoveZ;
     }
 
     public override void ExitState()
     {
-        throw new System.NotImplementedException();
+        Debug.Log("exiting walk state");
     }
 
     public override void CheckSwitchState()
     {
-        throw new System.NotImplementedException();
+        if (!Ctx.IsMovingPressed)
+        {
+            SwitchStates(Factory.Idle());
+        } 
+        else if(Ctx.IsSprintingPressed && Ctx.IsMovingPressed)
+        {
+            SwitchStates(Factory.Run());
+        }
     }
 
-    public override void InitialiseSubstate()
-    {
-        throw new System.NotImplementedException();
-    }
+    public override void InitialiseSubstate(){}
 }
