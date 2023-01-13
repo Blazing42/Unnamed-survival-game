@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 980312274383975581}
   - component: {fileID: 2029978175692802310}
-  - component: {fileID: 2029978175692802311}
   - component: {fileID: 1249700034}
   - component: {fileID: -6187163088577330635}
+  - component: {fileID: 827406792708060571}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -54,24 +54,6 @@ CharacterController:
   m_SkinWidth: 0.03
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.9, z: 0}
---- !u!114 &2029978175692802311
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 980312274383975583}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 60863d93a54833f43b97d151d72e138f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  walkSpeed: 1.6
-  sprintSpeed: 4
-  rotationFactor: 5
-  maxJumpHeight: 0.7
-  maxJumpTime: 0.5
-  fallMultiplier: 1.2
 --- !u!114 &1249700034
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -114,6 +96,24 @@ MonoBehaviour:
   ScaleThreshold: 0.01
   InLocalSpace: 0
   Interpolate: 1
+--- !u!114 &827406792708060571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 980312274383975583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37e2b79262cd2a743b767ffa96588ce3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  walkSpeed: 2
+  sprintSpeed: 4
+  rotationFactor: 2
+  maxJumpHeight: 0.7
+  maxJumpTime: 0.6
+  fallMultiplier: 1.3
 --- !u!1001 &2029978175119826917
 PrefabInstance:
   m_ObjectHideFlags: 0

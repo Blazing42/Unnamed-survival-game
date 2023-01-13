@@ -15,6 +15,7 @@ public class PlayerMovementController : NetworkBehaviour
     Vector2 _currentMoveInput;
     Vector3 _currentMove;
     Vector3 _currentRunMove;
+    Vector3 _appliedMovement;
     bool _isMovingPressed;
     bool _isSprintingPressed;
     bool _isJumpPressed = false;
@@ -143,19 +144,16 @@ public class PlayerMovementController : NetworkBehaviour
         if (_charController.isGrounded)
         {
             float groundedGravity = -0.05f;
-            _currentMove.y = groundedGravity;
-            _currentRunMove.y = groundedGravity;
+            _appliedMovement.y = groundedGravity;
             _animator.SetBool(_isJumpingHash, false);
         }
         else if (isFalling)
         {
-            _currentMove.y += Mathf.Min(_gravity * fallMultiplier * Time.deltaTime, -20.0f);
-            _currentRunMove.y += Mathf.Min(_gravity * fallMultiplier * Time.deltaTime, -20.0f);
+            _appliedMovement.y += Mathf.Min(_gravity * fallMultiplier * Time.deltaTime, -20.0f);
         }
         else
         {
-            _currentMove.y += _gravity * Time.deltaTime;
-            _currentRunMove.y += _gravity * Time.deltaTime;
+            _appliedMovement.y += _gravity * Time.deltaTime;
         }
     }
 
@@ -165,8 +163,7 @@ public class PlayerMovementController : NetworkBehaviour
         if(!_isJumping && _charController.isGrounded && _isJumpPressed)
         {
             _isJumping = true;
-            _currentMove.y = _initialJumpVelocity;
-            _currentRunMove.y = _initialJumpVelocity;
+            _appliedMovement.y = _initialJumpVelocity;
             _animator.SetBool(_isJumpingHash, true);
         }
         else if(!_isJumpPressed && _charController.isGrounded && _isJumping)
@@ -183,12 +180,16 @@ public class PlayerMovementController : NetworkBehaviour
 
         if (_isSprintingPressed)
         {
-            _charController.Move(_currentRunMove * Time.deltaTime);
+            _appliedMovement.x = _currentRunMove.x;
+            _appliedMovement.z = _currentRunMove.z;
         }
         else
         {
-            _charController.Move(_currentMove * Time.deltaTime);
+            _appliedMovement.x = _currentMove.x;
+            _appliedMovement.z = _currentMove.z;
         }
+
+        _charController.Move(_appliedMovement * Time.deltaTime);
 
         HandleRotation();
         HandleGravity();
