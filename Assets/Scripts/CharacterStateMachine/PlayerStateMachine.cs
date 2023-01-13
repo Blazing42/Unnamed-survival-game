@@ -24,6 +24,10 @@ public class PlayerStateMachine : NetworkBehaviour
     public float CurrentRunMoveX { get { return _currentRunMove.x; } set { _currentRunMove.x = value; } }
     public float CurrentRunMoveZ { get { return _currentRunMove.z; } set { _currentRunMove.z = value; } }
 
+    Vector3 _currentSneakMove;
+    public float CurrentSneakMoveX { get { return _currentSneakMove.x; } set { _currentSneakMove.x = value; } }
+    public float CurrentSneakMoveZ { get { return _currentSneakMove.z; } set { _currentSneakMove.z = value; } }
+
     Vector3 _appliedMovement;
     public float AppliedMovementY { get { return _appliedMovement.y; } set { _appliedMovement.y = value; } }
     public float AppliedMovementX { get { return _appliedMovement.x; } set { _appliedMovement.x = value; } }
@@ -43,7 +47,8 @@ public class PlayerStateMachine : NetworkBehaviour
     //editable variables in the editor for playtesting
     [SerializeField] float walkSpeed;
     [SerializeField] float sprintSpeed;
-    [SerializeField] float crouchWalkSpeed;
+    [SerializeField] float sneakSpeed;
+    public float SneakSpeed { get { return sneakSpeed; } }
     [SerializeField] float rotationFactor;
     [SerializeField] float maxJumpHeight;
     [SerializeField] float maxJumpTime;
@@ -146,6 +151,8 @@ public class PlayerStateMachine : NetworkBehaviour
         _currentMove.z = _currentMoveInput.y * walkSpeed;
         _currentRunMove.x = _currentMoveInput.x * sprintSpeed;
         _currentRunMove.z = _currentMoveInput.y * sprintSpeed;
+        _currentSneakMove.x = _currentMoveInput.x * sneakSpeed;
+        _currentSneakMove.z = _currentMoveInput.y * sneakSpeed;
         _isMovingPressed = _currentMoveInput.x != 0 || _currentMoveInput.y != 0;
     }
 

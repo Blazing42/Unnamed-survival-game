@@ -16,8 +16,17 @@ public class PlayerWalkState : PlayerBaseState
     public override void UpdateState()
     {
         CheckSwitchState();
-        Ctx.AppliedMovementX = Ctx.CurrentMoveX;
-        Ctx.AppliedMovementZ = Ctx.CurrentMoveZ;
+        if (Ctx.IsCrouchPressed)
+        {
+            Ctx.AppliedMovementX = Ctx.CurrentSneakMoveX;
+            Ctx.AppliedMovementZ = Ctx.CurrentSneakMoveZ;
+        }
+        else
+        {
+            Ctx.AppliedMovementX = Ctx.CurrentMoveX;
+            Ctx.AppliedMovementZ = Ctx.CurrentMoveZ;
+        }
+        
     }
 
     public override void ExitState()
