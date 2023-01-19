@@ -6,10 +6,10 @@ using Unity.Netcode;
 
 public class PlayerStateMachine : NetworkBehaviour
 {
-    // Start is called before the first frame update
     //reference variables
     PlayerInput _playerInput;
     CharacterController _charController;
+    Camera _cam;
     public CharacterController CharController { get { return _charController; } }
     Animator _animator;
     public Animator Animator { get { return _animator; } }
@@ -32,6 +32,7 @@ public class PlayerStateMachine : NetworkBehaviour
     public float AppliedMovementY { get { return _appliedMovement.y; } set { _appliedMovement.y = value; } }
     public float AppliedMovementX { get { return _appliedMovement.x; } set { _appliedMovement.x = value; } }
     public float AppliedMovementZ { get { return _appliedMovement.z; } set { _appliedMovement.z = value; } }
+    Vector3 _camRelativeMovement;
 
     bool _isMovingPressed;
     public bool IsMovingPressed { get { return _isMovingPressed;  } }
@@ -84,6 +85,7 @@ public class PlayerStateMachine : NetworkBehaviour
         //assign classes to the variables
         _playerInput = new PlayerInput();
         _charController = GetComponent<CharacterController>();
+        _cam = Camera.main;
 
         //setup animation
         _animator = GetComponentInChildren<Animator>();
@@ -122,16 +124,18 @@ public class PlayerStateMachine : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        _camRelativeMovement = ConvertToCamSpace(_appliedMovement);
+        _charController.Move(_camRelativeMovement * Time.deltaTime);
          HandleRotation();
-        _charController.Move(_appliedMovement * Time.deltaTime);
         _currentState.UpdateStates();
     }
 
     void HandleRotation()
     {
         Vector3 positionToLookAt;
-        positionToLookAt.x = _currentMove.x;
-        positionToLookAt.z = _currentMove.z;
+        positionToLookAt.x = _camRelativeMovement.x;
+        positionToLookAt.z = _camRelativeMovement.z;
         positionToLookAt.y = 0.0f;
 
         Quaternion currentRotation = transform.rotation;
@@ -170,6 +174,29 @@ public class PlayerStateMachine : NetworkBehaviour
     void OnCrouch(InputAction.CallbackContext context)
     {
         _isCrouchPressed = context.ReadValueAsButton();
+    }
+
+    Vector3 ConvertToCamSpace(Vector3 vectorToRotate)
+    {
+        float yValue = vectorToRotate.y;
+        
+        //get the forward and right directional vectors of the camera
+        Vector3 camForward = _cam.transform.forward;
+        Vector3 camRight = _cam.transform.right;
+
+        //ignore up and down camera angles
+        camForward.y = 0f;
+        camRight.y = 0f;
+
+        //normalise the vectors again
+        camForward = camForward.normalized;
+        camRight = camRight.normalized;
+
+        Vector3 camForwardZProduct = vectorToRotate.z * camForward;
+        Vector3 camForwardXProduct = vectorToRotate.x * camRight;
+        Vector3 rotatedVector = camForwardXProduct + camForwardZProduct;
+        rotatedVector.y = yValue;
+        return rotatedVector;
     }
 
     private void OnEnable()
